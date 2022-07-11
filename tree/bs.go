@@ -1,33 +1,32 @@
 package stptree
 
-type BSTComparable[T any] interface {
-	lessThan(T) bool
-	greaterThan(T) bool
-}
+import (
+	stptype "github.com/Mericusta/go-stp/type"
+)
 
-type BSTree[T BSTComparable[T]] struct {
+type BSTree[T stptype.STPOrdered[T]] struct {
 	r *bstNode[T]
 }
 
-func NewBSTree[T BSTComparable[T]]() *BSTree[T] {
+func NewBSTree[T stptype.STPOrdered[T]]() *BSTree[T] {
 	return &BSTree[T]{}
 }
 
-func (t *BSTree[int]) Set(v int) {
+func (t *BSTree[T]) Set(v T) {
 	if t.r == nil {
 		t.r = newBSTNode(v)
 		return
 	}
 	n := t.r
 	for {
-		if n.v.lessThan(v) {
+		if n.v.LT(v) {
 			if n.l == nil {
 				n.l = newBSTNode(v)
 				return
 			} else {
 				n = n.l
 			}
-		} else if n.v.greaterThan(v) {
+		} else if n.v.GT(v) {
 			if n.r == nil {
 				n.r = newBSTNode(v)
 				return
@@ -40,12 +39,12 @@ func (t *BSTree[int]) Set(v int) {
 	}
 }
 
-type bstNode[T BSTComparable[T]] struct {
+type bstNode[T any] struct {
 	v T
 	l *bstNode[T]
 	r *bstNode[T]
 }
 
-func newBSTNode[VT BSTComparable[VT]](v VT) *bstNode[VT] {
-	return &bstNode[VT]{v: v}
+func newBSTNode[T stptype.STPOrdered[T]](v T) *bstNode[T] {
+	return &bstNode[T]{v: v}
 }

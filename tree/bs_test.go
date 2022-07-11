@@ -3,24 +3,33 @@ package stptree
 import (
 	"fmt"
 	"testing"
+
+	stptype "github.com/Mericusta/go-stp/type"
 )
 
 type testBSTValue struct {
-	i int
-	s string
+	i stptype.Int
+	s stptype.String
 }
 
-func (v testBSTValue) lessThan(rv testBSTValue) bool {
+func (v testBSTValue) LT(rv testBSTValue) bool {
 	return v.i < rv.i && v.s < rv.s
 }
 
-func (v testBSTValue) greaterThan(rv testBSTValue) bool {
+func (v testBSTValue) GT(rv testBSTValue) bool {
 	return v.i > rv.i && v.s > rv.s
 }
 
 func Test_BSTree(t *testing.T) {
-	bst := NewBSTree[testBSTValue]()
+	bst1 := NewBSTree[stptype.Int]()
+	bst1.Set(stptype.Int(3))
+	bst2 := NewBSTree[testBSTValue]()
+	bst2.Set(testBSTValue{i: 1, s: "3"})
 	for index := 0; index != 5; index++ {
-		bst.Set(testBSTValue{i: 5 - index, s: fmt.Sprintf("%v", index)})
+		bst1.Set(stptype.Int(5 - index))
+		bst2.Set(testBSTValue{
+			i: stptype.Int(5 - index),
+			s: stptype.String(fmt.Sprintf("%v", index)),
+		})
 	}
 }
