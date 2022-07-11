@@ -8,8 +8,8 @@ type BSTree[T stptype.STPOrdered[T]] struct {
 	r *bstNode[T]
 }
 
-func NewBSTree[T stptype.STPOrdered[T]]() *BSTree[T] {
-	return &BSTree[T]{}
+func NewBSTree[T stptype.STPOrdered[T]](v T) *BSTree[T] {
+	return &BSTree[T]{r: newBSTNode(v)}
 }
 
 func (t *BSTree[T]) Set(v T) {
