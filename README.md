@@ -23,3 +23,7 @@
     - func (m Map[K, V]) Key() []K
     - func (m Map[K, V]) Range(f func(K, V) bool)
     
+## slice
+
+- Compare
+    compare any two slice
