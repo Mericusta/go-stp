@@ -1,4 +1,4 @@
-package convert
+package stpconvert
 
 import (
 	"strings"
