@@ -46,5 +46,6 @@ type _s struct {
     // ...
 }
 
-fmt.Println(ConvertStringToStringStruct[_s](s, ",")) // &_s{s1: "I am a boy", s2: "You are a girl", s3: "We are human"}
+// &_s{s1: "I am a boy", s2: "You are a girl", s3: "We are human"}
+fmt.Println(ConvertStringToStringStruct[_s](s, ","))
 ```
