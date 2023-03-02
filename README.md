@@ -49,3 +49,28 @@ type _s struct {
 // &_s{s1: "I am a boy", s2: "You are a girl", s3: "We are human"}
 fmt.Println(ConvertStringToStringStruct[_s](s, ","))
 ```
+
+## channel
+
+### func
+
+- NewSharedChannel
+
+create a shared channel
+
+- NewSharedBufferChannel
+
+create a shared channel with buffer
+
+### struct
+
+- SharedChannel[T any]
+    - shared channel
+
+### method
+
+- SharedChannel[T any]
+    - func (sc *SharedChannel[T]) Share() *SharedChannel[T]
+    - func (sc *SharedChannel[T]) Get() chan T
+    - func (sc *SharedChannel[T]) UseCount() int64
+    - func (sc *SharedChannel[T]) Close()
