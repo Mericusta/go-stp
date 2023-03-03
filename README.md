@@ -8,11 +8,15 @@
     get key slice from a map
 - NewMap
     make a Map struct
+- NewCMap
+    make a CMap struct
 
 ### struct
 
 - Map [K comparable, V any]
     - a shrinkable map
+- CMap [K comparable, V any]
+    - a map has a sync.RWMutex
 
 ### method
 
@@ -22,6 +26,11 @@
     - func (m Map[K, V]) Get(k K) (V, bool)
     - func (m Map[K, V]) Key() []K
     - func (m Map[K, V]) Range(f func(K, V) bool)
+
+- CMap [K comparable, V any]
+    - func (cm *CMap[K, V]) Get(k K) (V, bool)
+    - func (cm *CMap[K, V]) Save(k K, v V) (int, bool)
+    - func (cm *CMap[K, V]) Remove(k K) (V, int)
     
 ## slice
 
