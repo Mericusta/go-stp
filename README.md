@@ -1,14 +1,14 @@
 # go-stp
 
-## map
+## stpmap
 
 ### func
 
-- Key
+- Key[K comparable, V any](tm map[K]V) []K
     get key slice from a map
-- NewMap
+- NewMap[K comparable, V any]() *Map[K, V]
     make a Map struct
-- NewCMap
+- NewCMap[K comparable, V any]() *CMap[K, V]
     make a CMap struct
 
 ### struct
@@ -32,14 +32,14 @@
     - func (cm *CMap[K, V]) Save(k K, v V) (int, bool)
     - func (cm *CMap[K, V]) Remove(k K) (V, int)
     
-## slice
+## stpslice
 
 ### func
 
 - Compare
     compare any two slice
 
-## convert
+## stpconvert
 
 ### func
 
@@ -59,7 +59,7 @@ type _s struct {
 fmt.Println(ConvertStringToStringStruct[_s](s, ","))
 ```
 
-## channel
+## stpchannel
 
 ### func
 
@@ -83,3 +83,21 @@ create a shared channel with buffer
     - func (sc *SharedChannel[T]) Get() chan T
     - func (sc *SharedChannel[T]) UseCount() int64
     - func (sc *SharedChannel[T]) Close()
+
+## stppool
+
+### func
+
+- NewPool[T any](c int) *Pool[T]
+    - make an object pool with counter to allocate memory
+    - in particular, any type that uses `Pool` needs to implement its null method, that is, the byte array element pointing to memory is 0, for example: `simpleStruct.Free`
+
+### struct
+
+- Pool[T any]
+    - pool struct, holding memory byte
+
+### method
+
+- Pool[T any]
+    - func (p *Pool[T]) Get() *T
