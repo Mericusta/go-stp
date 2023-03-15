@@ -4,7 +4,13 @@ import (
 	"sync"
 )
 
+type noCopy struct{}
+
+func (*noCopy) Lock()   {}
+func (*noCopy) Unlock() {}
+
 type CMap[K comparable, V any] struct {
+	noCopy
 	rw sync.RWMutex
 	m  map[K]V
 }

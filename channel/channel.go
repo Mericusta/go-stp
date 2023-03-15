@@ -2,7 +2,13 @@ package stpchannel
 
 import "sync/atomic"
 
+type noCopy struct{}
+
+func (*noCopy) Lock()   {}
+func (*noCopy) Unlock() {}
+
 type SharedChannel[T any] struct {
+	noCopy
 	c  chan T
 	uc *int64
 }
