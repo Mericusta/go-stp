@@ -98,7 +98,7 @@ func CalculatePunctuationMarksContentLength(contentAfterLeftPunctuationMark stri
 // @content                               待查找的内容
 // @scopeBeginIndex                       左边界起始符号的下标
 // @return                                不包含左右边界的内容
-func GetScopeContentBetweenPunctuationMarks(content []byte, scopeBeginIndex int) []byte {
+func GetScopeContentBetweenPunctuationMarks(content string, scopeBeginIndex int) string {
 	scopeBeginRune := rune(content[scopeBeginIndex])
 	scopeEndRune := GetAnotherPunctuationMark(scopeBeginRune)
 	scopeContentLength := CalculatePunctuationMarksContentLength(
@@ -106,7 +106,7 @@ func GetScopeContentBetweenPunctuationMarks(content []byte, scopeBeginIndex int)
 		scopeBeginRune, scopeEndRune,
 		InvalidScopePunctuationMarkMap,
 	)
-	return content[scopeBeginIndex+1 : scopeBeginIndex+1+scopeContentLength]
+	return string([]rune(content)[scopeBeginIndex+1 : scopeBeginIndex+1+scopeContentLength])
 }
 
 // SplitContent 划分内容节点
