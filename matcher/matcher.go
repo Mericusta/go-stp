@@ -18,10 +18,23 @@ var (
 	PunctuationMarkRightInverseQuotes rune = '`'
 	PunctuationMarkLeftSingleQuotes   rune = '\''
 	PunctuationMarkRightSingleQuotes  rune = '\''
+	PunctuationMarkLeftBracket        rune = '('
+	PunctuationMarkRightBracket       rune = ')'
+	PunctuationMarkLeftCurlyBracket   rune = '{'
+	PunctuationMarkRightCurlyBracket  rune = '}'
+	PunctuationMarkLeftSquareBracket  rune = '['
+	PunctuationMarkRightSquareBracket rune = ']'
+	PunctuationMarkPoint              rune = '.'
+	ASCIISpace                        rune = ' '
 	InvalidScopePunctuationMarkMap         = map[rune]rune{
 		PunctuationMarkLeftDoubleQuotes:  PunctuationMarkRightDoubleQuotes,
 		PunctuationMarkLeftInverseQuotes: PunctuationMarkRightInverseQuotes,
 		PunctuationMarkLeftSingleQuotes:  PunctuationMarkRightSingleQuotes,
+	}
+	ScopePunctuationMarkList = []int{
+		PunctuationMarkBracket,
+		PunctuationMarkCurlyBracket,
+		PunctuationMarkSquareBracket,
 	}
 )
 
@@ -128,36 +141,10 @@ func GetScopeContentBetweenPunctuationMarks(content string, scopeBeginIndex int,
 // 	return string([]rune(content)[scopeBeginIndex+1 : scopeBeginIndex+1+scopeContentRuneLength])
 // }
 
-// SplitContent 划分内容节点
-type SplitContent struct {
-	ContentList         []string
-	SubSplitContentList []*SplitContent
-}
-
-// RecursiveSplitUnderSameDeepPunctuationMarksContent 相同深度的成对标点符号下的内容划分
-// @content                 待分析的字符串，不包含最顶层左右边界
-// @punctuationLeftMarkList 指定成对标点符号的左边界，必须是 (, [, {, ", ', ` 之一
-// @splitter                指定分隔符
-// @return
-func RecursiveSplitUnderSameDeepPunctuationMarksContent(content string, leftPunctuationMarkList []rune, splitter string) *SplitContent {
-	if punctuationContentNode := RecursiveTraitMultiPunctuationMarksContent(content, &PunctuationMarkInfo{
-		PunctuationMark: 0,
-		Index:           -1,
-	}, &PunctuationMarkInfo{
-		PunctuationMark: 0,
-		Index:           len(content),
-	}, leftPunctuationMarkList, 1, 0); punctuationContentNode != nil {
-		return splitUnderSameDeepPunctuationMarksContent(punctuationContentNode, splitter, 0, 0)
-	}
-	return nil
-}
-
-// PunctuationContent 成对标点符号的内容节点
-type PunctuationContent struct {
-	Content                   string
-	LeftPunctuationMark       *PunctuationMarkInfo
-	RightPunctuationMark      *PunctuationMarkInfo
-	SubPunctuationContentList []*PunctuationContent
+// PunctuationIndex 成对标点符号的下标数据
+type PunctuationIndex struct {
+	Left  int
+	Right int
 }
 
 type PunctuationMarkInfo struct {
@@ -165,10 +152,49 @@ type PunctuationMarkInfo struct {
 	Index           int
 }
 
-// // TraitMultiPunctuationMarksContent 混合成对标点符号的内容分类提取
-// func TraitMultiPunctuationMarksContent(content string, leftPunctuationMarkList []rune, maxDeep int) *PunctuationContent {
-// 	return
-// }
+// NewPunctuationContent 成对标点符号的内容节点
+type NewPunctuationContent struct {
+	Content                   string
+	LeftPunctuationMark       *PunctuationMarkInfo
+	RightPunctuationMark      *PunctuationMarkInfo
+	SubPunctuationContentList []*NewPunctuationContent
+}
+
+// 逻辑常量
+const (
+	PunctuationMarkQuote         = 1
+	PunctuationMarkBracket       = 2
+	PunctuationMarkCurlyBracket  = 3
+	PunctuationMarkSquareBracket = 4
+)
+
+// GetPunctuationMark 获取标点符号
+func GetPunctuationMark(punctuationMark int) (rune, rune) {
+	switch punctuationMark {
+	case PunctuationMarkCurlyBracket:
+		return PunctuationMarkLeftCurlyBracket, PunctuationMarkRightCurlyBracket
+	case PunctuationMarkSquareBracket:
+		return PunctuationMarkLeftSquareBracket, PunctuationMarkRightSquareBracket
+	default:
+		return PunctuationMarkLeftBracket, PunctuationMarkRightBracket
+	}
+}
+
+// TraitMultiPunctuationMarksContent 混合成对标点符号的内容分类提取
+func TraitMultiPunctuationMarksContent(content string, punctuationMarkList []int, maxDeep int) *NewPunctuationContent {
+	leftPunctuationMarkList := make([]rune, 0, len(punctuationMarkList))
+	for _, punctuationMark := range punctuationMarkList {
+		leftPunctuationMark, _ := GetPunctuationMark(punctuationMark)
+		leftPunctuationMarkList = append(leftPunctuationMarkList, leftPunctuationMark)
+	}
+	return RecursiveTraitMultiPunctuationMarksContent(content, &PunctuationMarkInfo{
+		PunctuationMark: 0,
+		Index:           -1,
+	}, &PunctuationMarkInfo{
+		PunctuationMark: 0,
+		Index:           len(content),
+	}, leftPunctuationMarkList, maxDeep, 0)
+}
 
 // RecursiveTraitMultiPunctuationMarksContent 混合成对标点符号的内容分类提取
 // @content 待处理内容
@@ -178,12 +204,12 @@ type PunctuationMarkInfo struct {
 // @maxDeep 待处理的最大深度
 // @deep 当前深度
 // @return 根节点
-func RecursiveTraitMultiPunctuationMarksContent(content string, leftPunctuationMarkInfo, rightPunctuationMarkInfo *PunctuationMarkInfo, scopeLeftPunctuationMarkList []rune, maxDeep, deep int) *PunctuationContent {
-	punctuationContent := &PunctuationContent{
+func RecursiveTraitMultiPunctuationMarksContent(content string, leftPunctuationMarkInfo, rightPunctuationMarkInfo *PunctuationMarkInfo, scopeLeftPunctuationMarkList []rune, maxDeep, deep int) *NewPunctuationContent {
+	punctuationContent := &NewPunctuationContent{
 		Content:                   content,
 		LeftPunctuationMark:       leftPunctuationMarkInfo,
 		RightPunctuationMark:      rightPunctuationMarkInfo,
-		SubPunctuationContentList: make([]*PunctuationContent, 0),
+		SubPunctuationContentList: make([]*NewPunctuationContent, 0),
 	}
 
 	passLeftLength := 0
@@ -243,12 +269,38 @@ func RecursiveTraitMultiPunctuationMarksContent(content string, leftPunctuationM
 	return punctuationContent
 }
 
+// SplitContent 划分内容节点
+type SplitContent struct {
+	ContentList         []string
+	SubSplitContentList []*SplitContent
+}
+
+// RecursiveSplitUnderSameDeepPunctuationMarksContent 相同深度的成对标点符号下的内容划分
+// @content 待分析的字符串
+// @punctuationMarkList 指定成对标点符号
+// @splitter 指定分隔符
+// @return
+func RecursiveSplitUnderSameDeepPunctuationMarksContent(content string, punctuationMarkList []int, splitter string) *SplitContent {
+	if punctuationContentNode := TraitMultiPunctuationMarksContent(content, punctuationMarkList, 1); punctuationContentNode != nil {
+		return splitUnderSameDeepPunctuationMarksContent(punctuationContentNode, splitter, 0, 0)
+	}
+	return nil
+}
+
+// RecursiveSplitUnderSameDeepPunctuationMarksContentNode 相同深度的成对标点符号下的内容划分
+// @punctuationContentNode 成对标点符号的内容根节点，注意：必须是根节点，不能是某个子节点，节点深度必须为 2
+// @splitter 指定分隔符
+// @return
+func RecursiveSplitUnderSameDeepPunctuationMarksContentNode(punctuationContentNode *NewPunctuationContent, splitter string) *SplitContent {
+	return splitUnderSameDeepPunctuationMarksContent(punctuationContentNode, splitter, 0, 0)
+}
+
 // splitUnderSameDeepPunctuationMarksContent 相同深度的成对标点符号下的内容划分的递归算法
 // @punctuationContentNode 成对标点符号的内容根节点，注意：必须是根节点，不能是某个子节点，节点深度 >= 2，分析结果中深度大于 2 的数据不正确
 // @splitter 指定分隔符
 // @maxDeep 递归最大深度
 // @deep 当前深度
-func splitUnderSameDeepPunctuationMarksContent(punctuationContentNode *PunctuationContent, splitter string, maxDeep, deep int) *SplitContent {
+func splitUnderSameDeepPunctuationMarksContent(punctuationContentNode *NewPunctuationContent, splitter string, maxDeep, deep int) *SplitContent {
 	splitContentNode := &SplitContent{
 		ContentList:         make([]string, 0),
 		SubSplitContentList: make([]*SplitContent, 0),
@@ -289,31 +341,15 @@ func splitUnderSameDeepPunctuationMarksContent(punctuationContentNode *Punctuati
 		return splitContentNode
 	}
 
-	for _, subPunctuationContentNode := range punctuationContentNode.SubPunctuationContentList {
-		if len(subPunctuationContentNode.Content) != 0 {
-			if subSplitContentNode := splitUnderSameDeepPunctuationMarksContent(subPunctuationContentNode, splitter, maxDeep, deep+1); subSplitContentNode != nil {
+	for _, subPuncutationContentNode := range punctuationContentNode.SubPunctuationContentList {
+		if len(subPuncutationContentNode.Content) != 0 {
+			if subSplitContentNode := splitUnderSameDeepPunctuationMarksContent(subPuncutationContentNode, splitter, maxDeep, deep+1); subSplitContentNode != nil {
 				splitContentNode.SubSplitContentList = append(splitContentNode.SubSplitContentList, subSplitContentNode)
 			}
 		}
 	}
 
 	return splitContentNode
-}
-
-// FindNextValidPunctuationMark
-func FindNextValidPunctuationMark(content []byte, p rune) int {
-	// TODO:
-	isValid := true
-	for index := 0; index != len(content); index++ {
-		if isValid && rune(content[index]) == p {
-			return index
-		}
-		if _, has := InvalidScopePunctuationMarkMap[rune(content[index])]; has {
-			l := CalculatePunctuationMarksContentLength(string(content[index+1:]), rune(content[index]), GetAnotherPunctuationMark(rune(content[index])), InvalidScopePunctuationMarkMap)
-			index += l
-		}
-	}
-	return -1
 }
 
 // ConvertSnakeCase2CamelCase 将蛇形命名法转换为驼峰命名法：xxx_yyy_zzz -> [X|x]xxYyyZzz
