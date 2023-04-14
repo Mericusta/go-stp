@@ -50,18 +50,22 @@ func IsCharacter(r rune) bool {
 
 // CalculatePunctuationMarksContentLength 计算成对符号的内容长度，去除结束符号
 // @contentAfterLeftPunctuationMark       待计算的字符串，不包括起始符号
-// @leftPunctuationMark                   符号左边界字符
+// @leftPunctuationMark                   符号左边界字符 必须是 (, [, {, ", ', ` 之一
 // @rightPunctuationMark                  符号右边界字符
 // @invalidScopePunctuationMarkMap        排除计算的边界符号
 // @return                                不包含左右边界的内容的长度
 func CalculatePunctuationMarksContentLength(contentAfterLeftPunctuationMark string, leftPunctuationMark, rightPunctuationMark rune, invalidScopePunctuationMarkMap map[rune]rune) int {
-	length := 0
-	leftCount := 1
-	rightCount := 0
+	byteCount := 0
+	leftRuneCount := 1
+	rightRuneCount := 0
 	isValid := true
 	var invalidScopePunctuationMark rune = -1
+	var runeLength int
 	strings.IndexFunc(contentAfterLeftPunctuationMark, func(r rune) bool {
-		length++
+		runeLength = len([]byte(string(r)))
+		byteCount += runeLength
+
+		// fmt.Printf("rune %v, string = %v, byte = %v\n", r, string(r), []byte(string(r)))
 
 		// end invalid scope
 		if !isValid && r == invalidScopePunctuationMark {
@@ -84,30 +88,45 @@ func CalculatePunctuationMarksContentLength(contentAfterLeftPunctuationMark stri
 
 		// out invalid scope
 		if r == leftPunctuationMark {
-			leftCount++
+			leftRuneCount++
 		} else if r == rightPunctuationMark {
-			rightCount++
+			rightRuneCount++
 		}
 
-		return leftCount == rightCount
+		return leftRuneCount == rightRuneCount
 	})
-	return length - 1 // // cut right punctuation mark len
+	return byteCount - len([]byte(string(rightPunctuationMark))) // // cut right punctuation mark len
 }
 
 // GetScopeContentBetweenPunctuationMarks 获取成对标点符号的内容
 // @content                               待查找的内容
-// @scopeBeginIndex                       左边界起始符号的下标
+// @scopeBeginIndex                       左边界起始符号的下标，[]byte 数组的下标
 // @return                                不包含左右边界的内容
-func GetScopeContentBetweenPunctuationMarks(content string, scopeBeginIndex int) string {
-	scopeBeginRune := rune(content[scopeBeginIndex])
-	scopeEndRune := GetAnotherPunctuationMark(scopeBeginRune)
+func GetScopeContentBetweenPunctuationMarks(content string, scopeBeginIndex int, scopeBeginRune, scopeEndRune rune) string {
+	runeLength := len([]byte(string(scopeBeginRune)))
 	scopeContentLength := CalculatePunctuationMarksContentLength(
-		string(content[scopeBeginIndex+1:]),
-		scopeBeginRune, scopeEndRune,
+		content[scopeBeginIndex+runeLength:], scopeBeginRune, scopeEndRune,
 		InvalidScopePunctuationMarkMap,
 	)
-	return string([]rune(content)[scopeBeginIndex+1 : scopeBeginIndex+1+scopeContentLength])
+	// 直接 content[x:y] 是按照 []byte[x:y] 来处理的
+	return content[scopeBeginIndex+runeLength : scopeBeginIndex+runeLength+scopeContentLength]
 }
+
+// // GetScopeContentBetweenPunctuationMarks 获取成对标点符号的内容
+// // @content                               待查找的内容
+// // @scopeBeginIndex                       左边界起始符号的下标，[]byte 数组的下标
+// // @return                                不包含左右边界的内容
+// func GetScopeContentBetweenPunctuationMarks(content string, scopeBeginIndex int) string {
+// 	scopeBeginRune := rune(content[scopeBeginIndex])
+// 	scopeEndRune := GetAnotherPunctuationMark(scopeBeginRune)
+// 	scopeContentRuneLength := CalculatePunctuationMarksContentLength(
+// 		string(content[scopeBeginIndex+1:]),
+// 		scopeBeginRune, scopeEndRune,
+// 		InvalidScopePunctuationMarkMap,
+// 	)
+// 	// 直接 content[x:y] 是按照 []byte[x:y] 来处理的
+// 	return string([]rune(content)[scopeBeginIndex+1 : scopeBeginIndex+1+scopeContentRuneLength])
+// }
 
 // SplitContent 划分内容节点
 type SplitContent struct {
@@ -117,7 +136,7 @@ type SplitContent struct {
 
 // RecursiveSplitUnderSameDeepPunctuationMarksContent 相同深度的成对标点符号下的内容划分
 // @content                 待分析的字符串，不包含最顶层左右边界
-// @punctuationLeftMarkList 指定成对标点符号的左边界，一般指 (, [, {, ", ', `
+// @punctuationLeftMarkList 指定成对标点符号的左边界，必须是 (, [, {, ", ', ` 之一
 // @splitter                指定分隔符
 // @return
 func RecursiveSplitUnderSameDeepPunctuationMarksContent(content string, leftPunctuationMarkList []rune, splitter string) *SplitContent {
@@ -420,4 +439,58 @@ func SplitAny(groupSplitter, itemSplitter byte, content string) [][]string {
 	}
 
 	return groupSlice
+}
+
+// CleanFileComment 置空所有注释
+func CleanFileComment(fileContent []byte) string {
+	isBlock, isComment := false, false
+	firstCommentIndex, secondCommentIndex := -1, -1
+	builder, commentBuffer := strings.Builder{}, strings.Builder{}
+	for index, b := range fileContent {
+		switch rune(b) {
+		case PunctuationMarkLeftDoubleQuotes:
+			if !isComment {
+				if !isBlock {
+					isBlock = true
+				} else {
+					isBlock = false
+				}
+			}
+		case '/':
+			if !isBlock {
+				if firstCommentIndex == -1 {
+					firstCommentIndex = index
+				} else if secondCommentIndex == -1 {
+					secondCommentIndex = index
+					isComment = true
+					commentBuffer.Reset()
+				}
+			}
+		case '\n':
+			if isComment {
+				isComment = false
+				firstCommentIndex = -1
+				secondCommentIndex = -1
+				commentBuffer.Reset()
+			}
+		}
+
+		if !isComment {
+			if firstCommentIndex != -1 && secondCommentIndex == -1 {
+				if commentBuffer.Len() > 0 {
+					// just one /, clear comment buffer
+					builder.WriteString(commentBuffer.String())
+					builder.WriteByte(b)
+					firstCommentIndex = -1
+					commentBuffer.Reset()
+				} else {
+					// first match /
+					commentBuffer.WriteByte(b)
+				}
+			} else {
+				builder.WriteByte(b)
+			}
+		}
+	}
+	return builder.String()
 }
