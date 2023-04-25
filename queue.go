@@ -28,10 +28,9 @@ func (d *PoolDequeue) Unpack(ptrs uint64) (head, tail uint32) {
 	return
 }
 
-func (d *PoolDequeue) Pack(head, tail uint32) uint64 {
+func (d *PoolDequeue) pack(head, tail uint32) uint64 {
 	const mask = 1<<dequeueBits - 1
-	return (uint64(head) << dequeueBits) |
-		uint64(tail&mask)
+	return (uint64(head) << dequeueBits) | uint64(tail&mask)
 }
 
 func (d *PoolDequeue) PushHead(val any) bool {
@@ -66,7 +65,7 @@ func (d *PoolDequeue) PopHead() (any, bool) {
 		}
 
 		head--
-		ptrs2 := d.Pack(head, tail)
+		ptrs2 := d.pack(head, tail)
 		if atomic.CompareAndSwapUint64(&d.headTail, ptrs, ptrs2) {
 			slot = &d.vals[head&uint32(len(d.vals)-1)]
 			break
@@ -90,7 +89,7 @@ func (d *PoolDequeue) PopTail() (any, bool) {
 			return nil, false
 		}
 
-		ptrs2 := d.Pack(head, tail+1)
+		ptrs2 := d.pack(head, tail+1)
 		if atomic.CompareAndSwapUint64(&d.headTail, ptrs, ptrs2) {
 			slot = &d.vals[tail&uint32(len(d.vals)-1)]
 			break
