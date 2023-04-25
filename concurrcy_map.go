@@ -1,13 +1,8 @@
-package stpmap
+package stp
 
 import (
 	"sync"
 )
-
-type noCopy struct{}
-
-func (*noCopy) Lock()   {}
-func (*noCopy) Unlock() {}
 
 type CMap[K comparable, V any] struct {
 	noCopy

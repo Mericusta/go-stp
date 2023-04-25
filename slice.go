@@ -1,4 +1,4 @@
-package stpslice
+package stp
 
 func Compare[T comparable](s1, s2 []T) bool {
 	if len(s1) != len(s2) {

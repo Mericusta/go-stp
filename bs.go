@@ -1,14 +1,10 @@
-package stptree
+package stp
 
-import (
-	stptype "github.com/Mericusta/go-stp/type"
-)
-
-type BSTree[T stptype.STPOrdered[T]] struct {
+type BSTree[T STPOrdered[T]] struct {
 	r *bstNode[T]
 }
 
-func NewBSTree[T stptype.STPOrdered[T]](v T) *BSTree[T] {
+func NewBSTree[T STPOrdered[T]](v T) *BSTree[T] {
 	return &BSTree[T]{r: newBSTNode(v)}
 }
 
@@ -45,6 +41,6 @@ type bstNode[T any] struct {
 	r *bstNode[T]
 }
 
-func newBSTNode[T stptype.STPOrdered[T]](v T) *bstNode[T] {
+func newBSTNode[T STPOrdered[T]](v T) *bstNode[T] {
 	return &bstNode[T]{v: v}
 }

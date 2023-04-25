@@ -1,4 +1,4 @@
-package stptype
+package stp
 
 type STPComparable[T any] interface {
 	EQ(T) bool

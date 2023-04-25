@@ -1,4 +1,4 @@
-package queue
+package stp
 
 import (
 	"sync/atomic"

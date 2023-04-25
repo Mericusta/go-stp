@@ -1,4 +1,4 @@
-package stptree
+package stp
 
 type rbtNode[K comparable, V any] struct {
 	k K

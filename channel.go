@@ -1,4 +1,4 @@
-package stpchannel
+package stp
 
 import "sync/atomic"
 

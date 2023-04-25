@@ -1,4 +1,4 @@
-package stptype
+package stp
 
 import (
 	"fmt"

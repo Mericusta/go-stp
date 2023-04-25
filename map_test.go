@@ -1,4 +1,4 @@
-package stpmap
+package stp
 
 import (
 	"math"

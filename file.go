@@ -1,4 +1,4 @@
-package stpfile
+package stp
 
 import (
 	"bufio"
