@@ -1,6 +1,6 @@
 # go-stp
 
-## stpmap
+## map
 
 ### func
 
@@ -32,14 +32,14 @@
     - func (cm *CMap[K, V]) Save(k K, v V) (int, bool)
     - func (cm *CMap[K, V]) Remove(k K) (V, int)
     
-## stpslice
+## slice
 
 ### func
 
 - Compare
     compare any two slice
 
-## stpconvert
+## convert
 
 ### func
 
@@ -59,7 +59,7 @@ type _s struct {
 fmt.Println(ConvertStringToStringStruct[_s](s, ","))
 ```
 
-## stpchannel
+## channel
 
 ### func
 
@@ -84,7 +84,7 @@ create a shared channel with buffer
     - func (sc *SharedChannel[T]) UseCount() int64
     - func (sc *SharedChannel[T]) Close()
 
-## stppool
+## pool
 
 ### func
 
@@ -101,3 +101,24 @@ create a shared channel with buffer
 
 - Pool[T any]
     - func (p *Pool[T]) Get() *T
+
+## queue
+
+> copy from $GOROOT/src/sync/poolqueue.go
+
+### func
+
+- func NewPoolDequeue(n int) PoolDequeue
+- func NewPoolChain() PoolDequeue
+
+### interface
+
+- PoolDequeue
+    - PushHead(val any) bool
+    - PopHead() (any, bool)
+    - PopTail() (any, bool)
+
+### struct
+
+- poolDequeue
+- poolChain
