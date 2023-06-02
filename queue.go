@@ -10,7 +10,7 @@ func NewPoolDequeue(n int) PoolDequeue {
 	d := &poolDequeue{
 		vals: make([]eface, n),
 	}
-	d.headTail = d.pack(1<<dequeueBits-500, 1<<dequeueBits-500)
+	d.headTail = d.pack(0, 0)
 	return d
 }
 
@@ -42,3 +42,40 @@ func (c *poolChain) PopHead() (any, bool) {
 func (c *poolChain) PopTail() (any, bool) {
 	return c.popTail()
 }
+
+// func NewRevertPoolDequeue(n int) PoolDequeue {
+// 	d := &revertPoolDequeue{
+// 		vals: make([]eface, n),
+// 	}
+// 	d.headTail = d.pack(1<<dequeueBits-500, 1<<dequeueBits-500)
+// 	return d
+// }
+
+// func (d *revertPoolDequeue) PushHead(val any) bool {
+// 	return d.pushHead(val)
+// }
+
+// func (d *revertPoolDequeue) PopHead() (any, bool) {
+// 	return d.popHead()
+// }
+
+// func (d *revertPoolDequeue) PopTail() (any, bool) {
+// 	return d.popTail()
+// }
+
+// func NewRPoolChain() PoolDequeue {
+// 	return new(revertPoolChain)
+// }
+
+// func (c *revertPoolChain) PushHead(val any) bool {
+// 	c.pushHead(val)
+// 	return true
+// }
+
+// func (c *revertPoolChain) PopHead() (any, bool) {
+// 	return c.popHead()
+// }
+
+// func (c *revertPoolChain) PopTail() (any, bool) {
+// 	return c.popTail()
+// }

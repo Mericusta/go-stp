@@ -9,9 +9,9 @@ import (
 	"unsafe"
 )
 
-// poolDequeue is a lock-free fixed-size single-producer,
-// multi-consumer queue. The single producer can both push and pop
-// from the head, and consumers can pop from the tail.
+// poolDequeue is a lock-free fixed-size multi-producer,
+// multi-consumer queue. The multi producers can push
+// to the head, and consumer can pop from the tail.
 //
 // It has the added feature that it nils out unused slots to avoid
 // unnecessary retention of objects. This is important for sync.Pool,
@@ -65,7 +65,7 @@ type dequeueNil *struct{}
 func (d *poolDequeue) unpack(ptrs uint64) (head, tail uint32) {
 	const mask = 1<<dequeueBits - 1
 	head = uint32((ptrs >> dequeueBits) & mask)
-	tail = uint32(ptrs & mask)
+	tail = uint32(ptrs & mask) // ptrs & 0000~0000 1111~1111 64 bits
 	return
 }
 
@@ -76,15 +76,27 @@ func (d *poolDequeue) pack(head, tail uint32) uint64 {
 }
 
 // pushHead adds val at the head of the queue. It returns false if the
-// queue is full. It must only be called by a single producer.
+// queue is full. It may be called by any number of producers.
 func (d *poolDequeue) pushHead(val any) bool {
-	ptrs := atomic.LoadUint64(&d.headTail)
-	head, tail := d.unpack(ptrs)
-	if (tail+uint32(len(d.vals)))&(1<<dequeueBits-1) == head {
-		// Queue is full.
-		return false
+	var slot *eface
+	for {
+		ptrs := atomic.LoadUint64(&d.headTail)
+		head, tail := d.unpack(ptrs)
+		if (tail+uint32(len(d.vals)))&(1<<dequeueBits-1) == head {
+			// Queue is full.
+			return false
+		}
+
+		// Confirm head and tail (for our speculative check
+		// above) and increment head. If this succeeds, then
+		// we own the slot at head.
+		ptrs2 := d.pack(head+1, tail)
+		if atomic.CompareAndSwapUint64(&d.headTail, ptrs, ptrs2) {
+			// Success.
+			slot = &d.vals[(head+1)&uint32(len(d.vals)-1)]
+			break
+		}
 	}
-	slot := &d.vals[head&uint32(len(d.vals)-1)]
 
 	// Check if the head slot has been released by popTail.
 	typ := atomic.LoadPointer(&slot.typ)
@@ -100,9 +112,6 @@ func (d *poolDequeue) pushHead(val any) bool {
 	}
 	*(*any)(unsafe.Pointer(slot)) = val
 
-	// Increment head. This passes ownership of slot to popTail
-	// and acts as a store barrier for writing the slot.
-	atomic.AddUint64(&d.headTail, 1<<dequeueBits)
 	return true
 }
 
@@ -142,28 +151,16 @@ func (d *poolDequeue) popHead() (any, bool) {
 }
 
 // popTail removes and returns the element at the tail of the queue.
-// It returns false if the queue is empty. It may be called by any
-// number of consumers.
+// It returns false if the queue is empty. It must only be called by
+// a single consumers.
 func (d *poolDequeue) popTail() (any, bool) {
-	var slot *eface
-	for {
-		ptrs := atomic.LoadUint64(&d.headTail)
-		head, tail := d.unpack(ptrs)
-		if tail == head {
-			// Queue is empty.
-			return nil, false
-		}
-
-		// Confirm head and tail (for our speculative check
-		// above) and increment tail. If this succeeds, then
-		// we own the slot at tail.
-		ptrs2 := d.pack(head, tail+1)
-		if atomic.CompareAndSwapUint64(&d.headTail, ptrs, ptrs2) {
-			// Success.
-			slot = &d.vals[tail&uint32(len(d.vals)-1)]
-			break
-		}
+	ptrs := atomic.LoadUint64(&d.headTail)
+	head, tail := d.unpack(ptrs)
+	if tail == head {
+		// Queue is empty.
+		return nil, false
 	}
+	slot := &d.vals[tail&uint32(len(d.vals)-1)]
 
 	// We now own slot.
 	val := *(*any)(unsafe.Pointer(slot))
@@ -181,6 +178,9 @@ func (d *poolDequeue) popTail() (any, bool) {
 	atomic.StorePointer(&slot.typ, nil)
 	// At this point pushHead owns the slot.
 
+	// Increment tail. This passes ownership of slot to popTail
+	// and acts as a store barrier for writing the slot.
+	atomic.AddUint64(&d.headTail, 1)
 	return val, true
 }
 
