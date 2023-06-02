@@ -104,7 +104,7 @@ create a shared channel with buffer
 
 ## queue
 
-> copy from $GOROOT/src/sync/poolqueue.go
+> copy from $GOROOT/src/sync/poolqueue.go and make it support multi producers
 
 ### func
 
@@ -121,4 +121,6 @@ create a shared channel with buffer
 ### struct
 
 - poolDequeue
+    - multi producers
+    - single consumers
 - poolChain
