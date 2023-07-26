@@ -14,11 +14,12 @@ func Compare[T comparable](s1, s2 []T) bool {
 }
 
 type Array[T comparable] struct {
-	s []T
+	S         []T
+	ZeroValue T
 }
 
-func NewArray[T comparable](s []T) *Array[T] {
-	return &Array[T]{s: s}
+func NewArray[T comparable](Slice []T) *Array[T] {
+	return &Array[T]{S: Slice}
 }
 
 // JS Array.concat()	连接两个或更多的数组，并返回结果。
@@ -28,8 +29,8 @@ func NewArray[T comparable](s []T) *Array[T] {
 // JS Array.fill()	使用一个固定值来填充数组。
 
 func (a *Array[T]) Filter(f func(v T, i int) bool) []T {
-	_s := make([]T, 0, len(a.s))
-	for _i, _v := range a.s {
+	_s := make([]T, 0, len(a.S))
+	for _i, _v := range a.S {
 		if f(_v, _i) {
 			_s = append(_s, _v)
 		}
@@ -38,19 +39,18 @@ func (a *Array[T]) Filter(f func(v T, i int) bool) []T {
 }
 
 func (a *Array[T]) Find(f func(v T, i int) bool) T {
-	for _i, _v := range a.s {
+	for _i, _v := range a.S {
 		if f(_v, _i) {
 			return _v
 		}
 	}
-	var zeroValue T
-	return zeroValue
+	return a.ZeroValue
 }
 
 // JS Array.findIndex()	返回符合传入测试（函数）条件的数组元素索引。
 
 func (a *Array[T]) ForEach(f func(v T, i int)) {
-	for _i, _v := range a.s {
+	for _i, _v := range a.S {
 		f(_v, _i)
 	}
 }
@@ -58,7 +58,7 @@ func (a *Array[T]) ForEach(f func(v T, i int)) {
 // JS Array.from()	通过给定的对象中创建一个数组。
 
 func (a *Array[T]) Includes(v T) bool {
-	for _, _v := range a.s {
+	for _, _v := range a.S {
 		if _v == v {
 			return true
 		}
@@ -73,8 +73,8 @@ func (a *Array[T]) Includes(v T) bool {
 // JS Array.lastIndexOf()	搜索数组中的元素，并返回它最后出现的位置。
 
 func (a *Array[T]) Map(f func(v T, i int) T) []T {
-	_s := make([]T, 0, len(a.s))
-	for _i, _v := range a.s {
+	_s := make([]T, 0, len(a.S))
+	for _i, _v := range a.S {
 		_s = append(_s, f(_v, _i))
 	}
 	return _s
@@ -83,8 +83,8 @@ func (a *Array[T]) Map(f func(v T, i int) T) []T {
 // JS Array.pop()	删除数组的最后一个元素并返回删除的元素。
 
 func (a *Array[T]) Push(vs ...T) int {
-	a.s = append(a.s, vs...)
-	return len(a.s)
+	a.S = append(a.S, vs...)
+	return len(a.S)
 }
 
 // JS Array.reduce()	将数组元素计算为一个值（从左到右）。
@@ -92,37 +92,36 @@ func (a *Array[T]) Push(vs ...T) int {
 // JS Array.reverse()	反转数组的元素顺序。
 
 func (a *Array[T]) Shift() T {
-	if len(a.s) == 0 {
-		var zeroValue T
-		return zeroValue
+	if len(a.S) == 0 {
+		return a.ZeroValue
 	}
-	e := a.s[0]
-	a.s = a.s[1:]
+	e := a.S[0]
+	a.S = a.S[1:]
 	return e
 }
 
 func (a *Array[T]) Slice(i1, i2 int) []T {
-	l := len(a.s)
+	l := len(a.S)
 	if i1 < 0 || i2 < 0 || i1 >= l || i2 >= l || i2 >= i1 {
 		return nil
 	}
-	return a.s[i1:i2]
+	return a.S[i1:i2]
 }
 
 // JS Array.some()	检测数组元素中是否有元素符合指定条件。
 // JS Array.sort()	对数组的元素进行排序。
 
 func (a *Array[T]) Splice(i, m int) []T {
-	l, _i := len(a.s), i+m
+	l, _i := len(a.S), i+m
 	if m == 0 || i < 0 || i >= l {
-		a.s = nil
+		a.S = nil
 	} else {
 		if _i >= l {
 			_i = l - 1
 		}
-		a.s = append(a.s[0:i], a.s[_i:]...)
+		a.S = append(a.S[0:i], a.S[_i:]...)
 	}
-	return a.s
+	return a.S
 }
 
 // JS Array.toString()	把数组转换为字符串，并返回结果。
