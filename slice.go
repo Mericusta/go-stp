@@ -12,3 +12,123 @@ func Compare[T comparable](s1, s2 []T) bool {
 	}
 	return true
 }
+
+type Array[T comparable] struct {
+	s []T
+}
+
+func NewArray[T comparable](s []T) *Array[T] {
+	return &Array[T]{s: s}
+}
+
+// JS Array.concat()	连接两个或更多的数组，并返回结果。
+// JS Array.copyWithin()	从数组的指定位置拷贝元素到数组的另一个指定位置中。
+// JS Array.entries()	返回数组的可迭代对象。
+// JS Array.every()	检测数值元素的每个元素是否都符合条件。
+// JS Array.fill()	使用一个固定值来填充数组。
+
+func (a *Array[T]) Filter(f func(v T, i int) bool) []T {
+	_s := make([]T, 0, len(a.s))
+	for _i, _v := range a.s {
+		if f(_v, _i) {
+			_s = append(_s, _v)
+		}
+	}
+	return _s
+}
+
+func (a *Array[T]) Find(f func(v T, i int) bool) T {
+	for _i, _v := range a.s {
+		if f(_v, _i) {
+			return _v
+		}
+	}
+	var zeroValue T
+	return zeroValue
+}
+
+// JS Array.findIndex()	返回符合传入测试（函数）条件的数组元素索引。
+
+func (a *Array[T]) ForEach(f func(v T, i int)) {
+	for _i, _v := range a.s {
+		f(_v, _i)
+	}
+}
+
+// JS Array.from()	通过给定的对象中创建一个数组。
+
+func (a *Array[T]) Includes(v T) bool {
+	for _, _v := range a.s {
+		if _v == v {
+			return true
+		}
+	}
+	return false
+}
+
+// JS Array.indexOf()	搜索数组中的元素，并返回它所在的位置。
+// JS Array.isArray()	判断对象是否为数组。
+// JS Array.join()	把数组的所有元素放入一个字符串。
+// JS Array.keys()	返回数组的可迭代对象，包含原始数组的键(key)。
+// JS Array.lastIndexOf()	搜索数组中的元素，并返回它最后出现的位置。
+
+func (a *Array[T]) Map(f func(v T, i int) T) []T {
+	_s := make([]T, 0, len(a.s))
+	for _i, _v := range a.s {
+		_s = append(_s, f(_v, _i))
+	}
+	return _s
+}
+
+// JS Array.pop()	删除数组的最后一个元素并返回删除的元素。
+
+func (a *Array[T]) Push(vs ...T) int {
+	a.s = append(a.s, vs...)
+	return len(a.s)
+}
+
+// JS Array.reduce()	将数组元素计算为一个值（从左到右）。
+// JS Array.reduceRight()	将数组元素计算为一个值（从右到左）。
+// JS Array.reverse()	反转数组的元素顺序。
+
+func (a *Array[T]) Shift() T {
+	if len(a.s) == 0 {
+		var zeroValue T
+		return zeroValue
+	}
+	e := a.s[0]
+	a.s = a.s[1:]
+	return e
+}
+
+func (a *Array[T]) Slice(i1, i2 int) []T {
+	l := len(a.s)
+	if i1 < 0 || i2 < 0 || i1 >= l || i2 >= l || i2 >= i1 {
+		return nil
+	}
+	return a.s[i1:i2]
+}
+
+// JS Array.some()	检测数组元素中是否有元素符合指定条件。
+// JS Array.sort()	对数组的元素进行排序。
+
+func (a *Array[T]) Splice(i, m int) []T {
+	l, _i := len(a.s), i+m
+	if m == 0 || i < 0 || i >= l {
+		a.s = nil
+	} else {
+		if _i >= l {
+			_i = l - 1
+		}
+		a.s = append(a.s[0:i], a.s[_i:]...)
+	}
+	return a.s
+}
+
+// JS Array.toString()	把数组转换为字符串，并返回结果。
+// JS Array.unshift()	向数组的开头添加一个或更多元素，并返回新的长度。
+// JS Array.valueOf()	返回数组对象的原始值。
+// JS Array.of()	将一组值转换为数组。
+// JS Array.at()	用于接收一个整数值并返回该索引对应的元素，允许正数和负数。负整数从数组中的最后一个元素开始倒数。
+// JS Array.flat()	创建一个新数组，这个新数组由原数组中的每个元素都调用一次提供的函数后的返回值组成。
+// JS Array.flatMap()	使用映射函数映射每个元素，然后将结果压缩成一个新数组。
