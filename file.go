@@ -31,6 +31,7 @@ func ReadContentLineOneByOne(reader io.Reader, f func(string, int) bool) error {
 		if !f(scanner.Text(), index) {
 			break
 		}
+		index++
 	}
 
 	if scanner.Err() != nil {
