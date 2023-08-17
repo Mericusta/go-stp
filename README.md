@@ -9,11 +9,11 @@
 
 ### func
 
-- Key[K comparable, V any](tm map[K]V) []K
+- Key\[K comparable, V any\](tm map[K]V) []K
     get key slice from a map
-- NewMap[K comparable, V any]() *Map[K, V]
+- NewMap\[K comparable, V any\]() *Map[K, V]
     make a Map struct
-- NewCMap[K comparable, V any]() *CMap[K, V]
+- NewCMap\[K comparable, V any\]() *CMap[K, V]
     make a CMap struct
 
 ### struct
