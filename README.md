@@ -1,6 +1,11 @@
 # go-stp
 
-## map
+## stp map
+
+> updated at 2023.08.17
+
+- map.go
+- concurrency_map.go
 
 ### func
 
@@ -26,20 +31,45 @@
     - func (m Map[K, V]) Get(k K) (V, bool)
     - func (m Map[K, V]) Key() []K
     - func (m Map[K, V]) Range(f func(K, V) bool)
+    - func (m Map[K, V]) Len() int
 
 - CMap [K comparable, V any]
     - func (cm *CMap[K, V]) Get(k K) (V, bool)
     - func (cm *CMap[K, V]) Save(k K, v V) (int, bool)
     - func (cm *CMap[K, V]) Remove(k K) (V, int)
     
-## slice
+## stp slice
+
+> updated at 2023.08.17
+
+- slice.go
 
 ### func
 
 - Compare
     compare any two slice
+- NewArray
+    make a JS-style Array struct
 
-## convert
+### method
+
+- Array [T comparable]
+    - func (a *Array[T]) Slice() []T
+    - func (a *Array[T]) Filter(f func(v T, i int) bool) *Array[T]
+    - func (a *Array[T]) Find(f func(v T, i int) bool) T
+    - func (a *Array[T]) ForEach(f func(v T, i int))
+    - func (a *Array[T]) Includes(v T) bool
+    - func (a *Array[T]) IndexOf(v T) int
+    - func (a *Array[T]) Map(f func(v T, i int) T) *Array[T]
+    - func (a *Array[T]) Push(vs ...T) int
+    - func (a *Array[T]) Shift() T
+    - func (a *Array[T]) Splice(i, m int) *Array[T]
+
+## stp string
+
+> updated at 2023.08.17
+
+- string.go
 
 ### func
 
@@ -59,32 +89,37 @@ type _s struct {
 fmt.Println(ConvertStringToStringStruct[_s](s, ","))
 ```
 
-## channel
+## stp channel
+
+> updated at 2023.08.17
+
+- channel.go
 
 ### func
 
 - NewSharedChannel
-
-create a shared channel
-
+    make a shared channel
 - NewSharedBufferChannel
-
-create a shared channel with buffer
+    make a shared channel with buffer
 
 ### struct
 
-- SharedChannel[T any]
+- SharedChannel [T any]
     - shared channel
 
 ### method
 
-- SharedChannel[T any]
+- SharedChannel [T any]
     - func (sc *SharedChannel[T]) Share() *SharedChannel[T]
     - func (sc *SharedChannel[T]) Get() chan T
     - func (sc *SharedChannel[T]) UseCount() int64
     - func (sc *SharedChannel[T]) Close()
 
-## pool
+## stp pool
+
+> updated at 2023.08.17
+
+- pool.go
 
 ### func
 
@@ -94,17 +129,22 @@ create a shared channel with buffer
 
 ### struct
 
-- Pool[T any]
+- Pool [T any]
     - pool struct, holding memory byte
 
 ### method
 
-- Pool[T any]
+- Pool [T any]
     - func (p *Pool[T]) Get() *T
 
-## queue
+## stp queue
 
 > copy from $GOROOT/src/sync/poolqueue.go and make it support multi producers
+
+> updated at 2023.08.17
+
+- queue.go
+- poolqueue.go
 
 ### func
 
@@ -118,9 +158,31 @@ create a shared channel with buffer
     - PopHead() (any, bool)
     - PopTail() (any, bool)
 
-### struct
+## stp reflect
 
-- poolDequeue
-    - multi producers
-    - single consumers
-- poolChain
+> updated at 2023.08.17
+
+- reflect.go
+
+### func
+
+- ReflectStructFieldKeyIndexMap(rt reflect.Type, tagKey string) map[string]int
+- ReflectStructFieldKeyOffsetMap(rt reflect.Type, tagKey string) map[string]uintptr
+- ReflectStructValue[T any](fs []string, v []any, tagKey string) *T
+
+reflect struct field value slice to struct
+
+```go
+type T struct {
+    I int     `json:"int"`
+    F float64 `json:"float64"`
+    S string  `json:"string"`
+}
+var fs []string = []string{"int", "float64", "string"}
+var v []any = []any{1024, 0.618, "this is gold ratio"}
+
+
+// &T{I: 1024, F: 0.618, S: "this is gold ratio"}
+fmt.Println(ReflectStructValue[T](fs, v, "json"))
+```
+- ReflectStructValueSlice[T any](fs []string, vs [][]any, tagKey string) []*T
