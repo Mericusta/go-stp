@@ -23,3 +23,27 @@ func ConvertStringToStringStruct[T any](str, splitter string) *T {
 
 	return sStruct
 }
+
+func BytesToString(b []byte) string {
+	return *(*string)(unsafe.Pointer(&b))
+}
+
+func StringToBytes(s string) []byte {
+	if len(s) < (1 << 5) {
+		return standardStringToBytes(s)
+	}
+	return unsafeStringToBytes(s)
+}
+
+func standardStringToBytes(s string) []byte {
+	return []byte(s)
+}
+
+func unsafeStringToBytes(s string) []byte {
+	return *(*[]byte)(unsafe.Pointer(
+		&struct {
+			string
+			Cap int
+		}{s, len(s)},
+	))
+}

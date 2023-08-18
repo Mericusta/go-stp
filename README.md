@@ -2,7 +2,7 @@
 
 ## stp map
 
-> updated at 2023.08.17
+> updated at 2023.08.18
 
 - map.go
 - concurrency_map.go
@@ -10,11 +10,13 @@
 ### func
 
 - Key\[K comparable, V any\](tm map[K]V) []K
-    get key slice from a map
+    - get key slice from a map
+
 - NewMap\[K comparable, V any\]() *Map[K, V]
-    make a Map struct
+    - make a Map struct
+
 - NewCMap\[K comparable, V any\]() *CMap[K, V]
-    make a CMap struct
+    - make a CMap struct
 
 ### struct
 
@@ -40,16 +42,16 @@
     
 ## stp slice
 
-> updated at 2023.08.17
+> updated at 2023.08.18
 
 - slice.go
 
 ### func
 
-- Compare
-    compare any two slice
-- NewArray
-    make a JS-style Array struct
+- Compare[T comparable](s1, s2 []T) bool
+    - compare any two slice
+- NewArray[T comparable](slice []T) *Array[T]
+    - make a JS-style Array struct
 
 ### method
 
@@ -67,13 +69,13 @@
 
 ## stp string
 
-> updated at 2023.08.17
+> updated at 2023.08.18
 
 - string.go
 
 ### func
 
-- ConvertStringToStringStruct
+- ConvertStringToStringStruct[T any](str, splitter string) *T
 
 split a string by splitter, then convert it to a struct, which the first several members's type must be string, eg,
 ```go
@@ -89,18 +91,21 @@ type _s struct {
 fmt.Println(ConvertStringToStringStruct[_s](s, ","))
 ```
 
+- BytesToString(b []byte) string
+- StringToBytes(s string) []byte
+
 ## stp channel
 
-> updated at 2023.08.17
+> updated at 2023.08.18
 
 - channel.go
 
 ### func
 
 - NewSharedChannel
-    make a shared channel
+    - make a shared channel
 - NewSharedBufferChannel
-    make a shared channel with buffer
+    - make a shared channel with buffer
 
 ### struct
 
