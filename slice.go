@@ -22,6 +22,10 @@ func NewArray[T comparable](slice []T) *Array[T] {
 	return &Array[T]{s: slice}
 }
 
+func (a *Array[T]) ZeroValue() T {
+	return a.zeroValue
+}
+
 func (a *Array[T]) Slice() []T {
 	return a.s
 }
@@ -54,6 +58,14 @@ func (a *Array[T]) Find(f func(v T, i int) bool) T {
 }
 
 // JS Array.findIndex() 返回符合传入测试（函数）条件的数组元素索引。
+func (a *Array[T]) FindIndex(f func(v T, i int) bool) int {
+	for _i, _v := range a.s {
+		if f(_v, _i) {
+			return _i
+		}
+	}
+	return -1
+}
 
 // JS Array.forEach() 数组每个元素都执行一次回调函数。
 func (a *Array[T]) ForEach(f func(v T, i int)) {
