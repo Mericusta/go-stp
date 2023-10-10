@@ -3,6 +3,11 @@ module github.com/Mericusta/go-stp
 go 1.18
 
 require (
-	golang.org/x/exp v0.0.0-20220706164943-b4a6d9510983 // indirect
-	golang.org/x/text v0.13.0 // indirect
+	github.com/go-redis/redis/v8 v8.11.5
+	golang.org/x/text v0.13.0
+)
+
+require (
+	github.com/cespare/xxhash/v2 v2.1.2 // indirect
+	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 )
