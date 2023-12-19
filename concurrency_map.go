@@ -43,3 +43,13 @@ func (cm *CMap[K, V]) Remove(k K) (V, int) {
 	l := len(cm.m)
 	return v, l
 }
+
+func (cm *CMap[K, V]) Range(f func(K, V) bool) {
+	cm.rw.Lock()
+	defer cm.rw.Unlock()
+	for k, v := range cm.m {
+		if !f(k, v) {
+			return
+		}
+	}
+}
