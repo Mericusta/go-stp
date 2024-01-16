@@ -31,7 +31,9 @@ func ConvertStringToStringStruct[T any](str, splitter string) *T {
 }
 
 func BytesToString(b []byte) string {
-	return *(*string)(unsafe.Pointer(&b))
+	x := (*[3]uintptr)(unsafe.Pointer(&b))
+	s := [2]uintptr{x[0], x[1]}
+	return *(*string)(unsafe.Pointer(&s))
 }
 
 func StringToBytes(s string) []byte {
@@ -46,12 +48,9 @@ func standardStringToBytes(s string) []byte {
 }
 
 func unsafeStringToBytes(s string) []byte {
-	return *(*[]byte)(unsafe.Pointer(
-		&struct {
-			string
-			Cap int
-		}{s, len(s)},
-	))
+	x := (*[2]uintptr)(unsafe.Pointer(&s))
+	b := [3]uintptr{x[0], x[1], x[1]}
+	return *(*[]byte)(unsafe.Pointer(&b))
 }
 
 type Code interface {
