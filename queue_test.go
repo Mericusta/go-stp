@@ -13,8 +13,8 @@ func Test_PoolDequeue(t *testing.T) {
 		producerCount = 1 << 16
 		produceCount  = 1
 		consumerCount = 1
-		p             = NewPoolDequeue(producerCount * produceCount)
-		producer      = func(wg *sync.WaitGroup, p PoolDequeue, v any) {
+		p             = NewPoolDequeue[int](producerCount * produceCount)
+		producer      = func(wg *sync.WaitGroup, p PoolDequeue[int], v any) {
 			if produceCount > 1 {
 				for i := 0; i < produceCount; i++ {
 					p.PushHead(i)
@@ -25,7 +25,7 @@ func Test_PoolDequeue(t *testing.T) {
 			wg.Done()
 			// fmt.Printf("producer %v done\n", v)
 		}
-		consumer = func(wg *sync.WaitGroup, p PoolDequeue) {
+		consumer = func(wg *sync.WaitGroup, p PoolDequeue[int]) {
 			i := 0
 			for i < producerCount {
 				v, ok := p.PopTail()

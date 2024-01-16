@@ -1,12 +1,12 @@
 package stp
 
-type PoolDequeue interface {
+type PoolDequeue[T any] interface {
 	PushHead(val any) bool
 	PopHead() (any, bool)
 	PopTail() (any, bool)
 }
 
-func NewPoolDequeue(n int) PoolDequeue {
+func NewPoolDequeue[T any](n int) PoolDequeue[T] {
 	d := &poolDequeue{
 		vals: make([]eface, n),
 	}
@@ -26,7 +26,7 @@ func (d *poolDequeue) PopTail() (any, bool) {
 	return d.popTail()
 }
 
-func NewPoolChain() PoolDequeue {
+func NewPoolChain[T any]() PoolDequeue[T] {
 	return new(poolChain)
 }
 
