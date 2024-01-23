@@ -4,13 +4,9 @@ import (
 	"sync"
 )
 
-func init() {
-	NewCMap(Updater(func(k int, v string) {}))
-}
-
 type CMapOption[K comparable, V any] func(*CMap[K, V])
 
-func Updater[K comparable, V any](f func(K, V)) CMapOption[K, V] {
+func Updater[K comparable, V any](f func(K, V) V) CMapOption[K, V] {
 	return func(m *CMap[K, V]) { m.updater = f }
 }
 
@@ -18,7 +14,7 @@ type CMap[K comparable, V any] struct {
 	noCopy
 	rw      sync.RWMutex
 	m       map[K]V
-	updater func(K, V)
+	updater func(K, V) V
 }
 
 func NewCMap[K comparable, V any](opts ...CMapOption[K, V]) *CMap[K, V] {
@@ -69,12 +65,13 @@ func (cm *CMap[K, V]) Range(f func(K, V) bool) {
 	}
 }
 
-func (cm *CMap[K, V]) Update(k K) bool {
+func (cm *CMap[K, V]) Update(k K) (V, bool) {
+	var v V
 	if cm.updater == nil {
-		return false
+		return v, false
 	}
 	cm.rw.Lock()
 	defer cm.rw.Unlock()
-	cm.updater(k, cm.m[k])
-	return true
+	v = cm.updater(k, cm.m[k])
+	return v, true
 }
