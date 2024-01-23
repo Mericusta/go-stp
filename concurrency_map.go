@@ -72,6 +72,7 @@ func (cm *CMap[K, V]) Update(k K) (V, bool) {
 	}
 	cm.rw.Lock()
 	defer cm.rw.Unlock()
-	v = cm.updater(k, cm.m[k])
+	v = cm.m[k]
+	cm.m[k] = cm.updater(k, v)
 	return v, true
 }
