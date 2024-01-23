@@ -69,12 +69,12 @@ func (cm *CMap[K, V]) Range(f func(K, V) bool) {
 	}
 }
 
-func (cm *CMap[K, V]) Update(k K, v V) bool {
+func (cm *CMap[K, V]) Update(k K) bool {
 	if cm.updater == nil {
 		return false
 	}
 	cm.rw.Lock()
 	defer cm.rw.Unlock()
-	cm.m[k] = v
+	cm.updater(k, cm.m[k])
 	return true
 }
