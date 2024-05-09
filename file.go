@@ -12,7 +12,7 @@ import (
 	"strings"
 )
 
-func writeFileByFileFlag(path string, handler func([]byte) ([]byte, error), flag int) (*os.File, []byte, error) {
+func handleFileByFileFlag(path string, handler func([]byte) ([]byte, error), flag int) (*os.File, []byte, error) {
 	if handler == nil {
 		return nil, nil, fmt.Errorf("handler is nil")
 	}
@@ -40,9 +40,21 @@ func writeFileByFileFlag(path string, handler func([]byte) ([]byte, error), flag
 	return f, newContent, nil
 }
 
+// ReadFile 按照指定结构读文件
+func ReadFile[T any](path string, handler func([]byte) (T, error)) (T, error) {
+	var t T
+	_, newContent, err := handleFileByFileFlag(path, func(b []byte) ([]byte, error) {
+		return b, nil
+	}, os.O_RDONLY)
+	if err != nil {
+		return t, err
+	}
+	return handler(newContent)
+}
+
 // WriteFileByOverwriting 通过覆盖写入文件
 func WriteFileByOverwriting(path string, handler func([]byte) ([]byte, error)) error {
-	f, newContent, err := writeFileByFileFlag(path, handler, os.O_RDWR|os.O_CREATE)
+	f, newContent, err := handleFileByFileFlag(path, handler, os.O_RDWR|os.O_CREATE)
 	if err != nil {
 		return err
 	}
@@ -55,7 +67,7 @@ func WriteFileByOverwriting(path string, handler func([]byte) ([]byte, error)) e
 
 // WriteFileByAppend 通过追加写入文件
 func WriteFileByAppend(path string, handler func([]byte) ([]byte, error)) error {
-	f, newContent, err := writeFileByFileFlag(path, handler, os.O_RDWR|os.O_CREATE|os.O_APPEND)
+	f, newContent, err := handleFileByFileFlag(path, handler, os.O_RDWR|os.O_CREATE|os.O_APPEND)
 	if err != nil {
 		return err
 	}
