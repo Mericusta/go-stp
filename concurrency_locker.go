@@ -59,18 +59,18 @@ type DistributedRedisLocker struct{}
 
 func NewDistributedRedisLocker() *DistributedRedisLocker { return &DistributedRedisLocker{} }
 
-func (drl *DistributedRedisLocker) Lock(context context.Context, scripter redis.Scripter, key string, overtimeSeconds int, value interface{}) int {
+func (drl *DistributedRedisLocker) Lock(ctx context.Context, scripter redis.Scripter, key string, overtimeSeconds int, value interface{}) int {
 	script := redis.NewScript(lockScript)
-	result, err := script.Run(context, scripter, []string{key}, value, overtimeSeconds).Int()
+	result, err := script.Run(ctx, scripter, []string{key}, value, overtimeSeconds).Int()
 	if err != nil && !errors.Is(err, redis.Nil) {
 		return -1
 	}
 	return result
 }
 
-func (drl *DistributedRedisLocker) Unlock(context context.Context, scripter redis.Scripter, key string) int {
+func (drl *DistributedRedisLocker) Unlock(ctx context.Context, scripter redis.Scripter, key string) int {
 	script := redis.NewScript(unlockScript)
-	result, err := script.Run(context, scripter, []string{key}).Int()
+	result, err := script.Run(ctx, scripter, []string{key}).Int()
 	if err != nil && !errors.Is(err, redis.Nil) {
 		return -1
 	}

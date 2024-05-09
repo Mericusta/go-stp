@@ -12,6 +12,60 @@ import (
 	"strings"
 )
 
+func writeFileByFileFlag(path string, handler func([]byte) ([]byte, error), flag int) (*os.File, []byte, error) {
+	if handler == nil {
+		return nil, nil, fmt.Errorf("handler is nil")
+	}
+	var (
+		f       *os.File
+		content []byte
+		err     error
+	)
+	if IsExist(path) {
+		f, err = os.OpenFile(path, flag, 0666)
+	} else {
+		f, err = os.Create(path)
+	}
+	if err != nil {
+		return nil, nil, err
+	}
+	content, err = io.ReadAll(f)
+	if err != nil {
+		return nil, nil, err
+	}
+	newContent, err := handler(content)
+	if err != nil {
+		return nil, nil, err
+	}
+	return f, newContent, nil
+}
+
+// WriteFileByOverwriting 通过覆盖写入文件
+func WriteFileByOverwriting(path string, handler func([]byte) ([]byte, error)) error {
+	f, newContent, err := writeFileByFileFlag(path, handler, os.O_RDWR|os.O_CREATE)
+	if err != nil {
+		return err
+	}
+	writeLen, err := f.WriteAt(newContent, 0)
+	if err != nil {
+		return err
+	}
+	return f.Truncate(int64(writeLen))
+}
+
+// WriteFileByAppend 通过追加写入文件
+func WriteFileByAppend(path string, handler func([]byte) ([]byte, error)) error {
+	f, newContent, err := writeFileByFileFlag(path, handler, os.O_RDWR|os.O_CREATE|os.O_APPEND)
+	if err != nil {
+		return err
+	}
+	_, err = f.Write(newContent)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // ReadFileLineOneByOne 逐行读取文件内容，执行函数返回 true 则继续读取，返回 false 则结束读取
 func ReadFileLineOneByOne(filename string, f func(string, int) bool) error {
 	file, openError := os.Open(filename)

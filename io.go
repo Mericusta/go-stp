@@ -2,14 +2,16 @@ package stp
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"os"
 )
 
-func ConsoleInput(front, endText string) <-chan string {
+func ConsoleInput(ctx context.Context, front, endText string) <-chan string {
 	textChan := make(chan string, 8)
+	formatFront := front + " "
 
-	go func(_front, _endText string, _textChan chan<- string) {
+	go func(_ctx context.Context, _front, _endText string, _textChan chan<- string) {
 		fmt.Print(_front)
 		var (
 			ok  bool
@@ -24,7 +26,7 @@ func ConsoleInput(front, endText string) <-chan string {
 			_textChan <- text
 			fmt.Print(_front)
 		}
-	}(front, endText, textChan)
+	}(ctx, formatFront, endText, textChan)
 
 	return textChan
 }
