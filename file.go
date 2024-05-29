@@ -153,11 +153,11 @@ func CreateFile(filePath string) (*os.File, error) {
 
 // FormatFilePathWithOS 根据操作系统格式化路径
 func FormatFilePathWithOS(filePath string) string {
-	osLinux := "linux"
+	osLinux, osDarwin := "linux", "darwin"
 	operationSystem := runtime.GOOS
 	beReplaced := "/"
 	toReplace := "\\"
-	if operationSystem == osLinux {
+	if operationSystem == osLinux || operationSystem == osDarwin {
 		beReplaced, toReplace = toReplace, beReplaced
 	}
 	return strings.ReplaceAll(filePath, beReplaced, toReplace)
