@@ -13,6 +13,13 @@ func Compare[T comparable](s1, s2 []T) bool {
 	return true
 }
 
+type ArrayMode int // 数组模式
+
+const (
+	SLICE ArrayMode = iota + 1 // 切片模式
+	SET                        // 集合模式
+)
+
 type Array[T comparable] struct {
 	s         []T
 	zeroValue T
@@ -156,3 +163,12 @@ func (a *Array[T]) Splice(i, m int) *Array[T] {
 // JS Array.at() 用于接收一个整数值并返回该索引对应的元素，允许正数和负数。负整数从数组中的最后一个元素开始倒数。
 // JS Array.flat() 创建一个新数组，这个新数组由原数组中的每个元素都调用一次提供的函数后的返回值组成。
 // JS Array.flatMap() 使用映射函数映射每个元素，然后将结果压缩成一个新数组。
+
+// 合并数组，去掉重复元素
+func (a *Array[T]) Merge(b *Array[T]) {
+	b.ForEach(func(v T, i int) {
+		if !a.Includes(v) {
+			a.Push(v)
+		}
+	})
+}
