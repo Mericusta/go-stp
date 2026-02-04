@@ -4,6 +4,9 @@ import (
 	"sync"
 )
 
+// DEPRECATED: use sync.Map or other better implementation
+// sync.Map is not used here because it does not support generic type
+
 type CMapOption[K comparable, V any] func(*CMap[K, V])
 
 func Updater[K comparable, V any](f func(K, V) V) CMapOption[K, V] {
